@@ -17,25 +17,35 @@ static void middle_layer(int pd[]){
 
 	int pd_[2];
 	pipe(pd_);  
-	if(fork() == 0){
-		middle_layer(pd_); 		
-	}
-
-	close(pd_[0]); 	 
 	while((ret = read(pd[0], &num, sizeof(int))) == 0){
 
 	}
-	printf("prime: %d\n", num); 
+	if(num > 0){
+		printf("prime %d\n", num); 
+	}
+	else{
+		close(pd[0]); 
+		close(pd_[1]); 
+		exit(1);
+	}
 	int base = num; 
-
-	while((ret = read(pd[0], &num, sizeof(int))) != 0){
+	int flag = 0; 
+	
+	while((ret = read(pd[0], &num, sizeof(int))) > 0){
 		if(isMultiple(num, base)){
 			continue; 
 		}
 		write(pd_[1], &num, sizeof(int)); 
-		
+		flag = 1; 
 	}
-	
+	if(flag){
+		if(fork() == 0){
+			middle_layer(pd_); 		
+		}
+	}
+	close(pd_[0]); 	 
+
+	close(pd[0]); 	
 	close(pd_[1]); 
 	wait(0); 
 	exit(0); 
